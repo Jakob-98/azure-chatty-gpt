@@ -1,45 +1,13 @@
-// Some example messages.
-
-// The messages parsed param, should look something like this:
-// const messages = [
-//   { "role": "system", "content": "You are a helpful assistant." },
-//   { "role": "user", "content": "Who won the world series in 2020?" },
-//   { "role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020." },
-//   { "role": "user", "content": "Where was it played?" }
-// ]
-
-// Simple response example:
-
-// const completion = new ChatCompletion(apiKey, organizationID)
-// completion.create(ChatCompletion.GPT3Dot5Turbo, messages, {})
-//   .then((msg) => {
-//     console.log(msg)
-//   })
-//   .catch((err) => {
-//     console.log(err)
-//   })
-
-// Streaming response example:
-
-// completion.createStream(ChatCompletion.GPT3Dot5Turbo, messages, {}, (deltaMsg) => {
-//   console.log(deltaMsg)
-// })
-//   .then((finalMsg) => {
-//     console.log(finalMsg)
-//   })
-//   .catch((err) => {
-//     console.log(err)
-//   })
+require('dotenv').config();
 
 export class OpenAI {
-  static GPT3Dot5Turbo = 'gpt-3.5-turbo'
+  static GPT3Dot5Turbo = 'gpt-4-32k'
 
-  baseURL = 'https://api.openai.com/v1'
+  baseURL = process.env.BASE_URL;
   apiKey
   organizationID = ''
 
   constructor (apiKey, organizationID) {
-    // TODO: Make a better check than just something being present
     if (!apiKey) {
       throw new Error('no OpenAI API Key provided')
     }
@@ -52,7 +20,7 @@ export class OpenAI {
 
   #getHeaders () {
     const headers = {
-      'Authorization': `Bearer ${this.apiKey}`,
+      'api-key': `${this.apiKey}`,
       'Content-Type': 'application/json'
     }
 
@@ -84,28 +52,12 @@ export class OpenAI {
   }
 }
 
-// Params:
-// model
-// messages
-// temperature
-// top_p
-// n // Don't use this, it currently gives an error, if set (at least if set to 2)
-// stream
-// stop
-// max_tokens
-// presence_penalty
-// frequency_penalty
-// logit_bias
-// user
-
-// Documentation:
-// https://platform.openai.com/docs/api-reference/chat/create
 export class ChatCompletion extends OpenAI {
   endpoint
 
   constructor (apiKey, organizationID) {
     super(apiKey, organizationID)
-    this.endpoint = this.baseURL + '/chat/completions'
+    this.endpoint = this.baseURL
   }
 
   async create (options) {
@@ -117,6 +69,29 @@ export class ChatCompletion extends OpenAI {
 
     return await this.post(this.endpoint, options).then((res) => res.json())
   }
+
+//   //... Rest of the code remains unchanged ...
+// }
+
+// // Documentation:
+// // https://platform.openai.com/docs/api-reference/chat/create
+// export class ChatCompletion extends OpenAI {
+//   endpoint
+
+//   constructor (apiKey, organizationID) {
+//     super(apiKey, organizationID)
+//     this.endpoint = this.baseURL + '/chat/completions'
+//   }
+
+//   async create (options) {
+//     options = options || {}
+
+//     delete options.name
+//     delete options.createdAt
+//     delete options.stream
+
+//     return await this.post(this.endpoint, options).then((res) => res.json())
+//   }
 
   #buildResultFromStream (streamMessages) {
     if (!streamMessages || !streamMessages.length) {
